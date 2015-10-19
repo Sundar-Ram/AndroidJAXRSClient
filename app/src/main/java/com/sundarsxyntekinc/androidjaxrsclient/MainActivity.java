@@ -1,5 +1,7 @@
 package com.sundarsxyntekinc.androidjaxrsclient;
 
+import android.net.http.AndroidHttpClient;
+import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -13,15 +15,19 @@ import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.Reader;
+import java.io.UnsupportedEncodingException;
+import java.net.HttpURLConnection;
+import java.net.URL;
 
 public class MainActivity extends AppCompatActivity {
 
     TextView jaxrs;
+     String url = "http://10.1.16.44:8080/RESTful_Jersey_Hello_World/rest/hello";
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -30,45 +36,101 @@ public class MainActivity extends AppCompatActivity {
         //Find the Text View
         jaxrs = (TextView) findViewById(R.id.jaxrs);
 
+        new myAsyncTask().execute(url);
+
 
 
     }
 
-    Thread thread = new Thread(new Runnable(){
-        @Override
-        public void run() {
-            try {
-                HttpClient httpclient = new DefaultHttpClient();
-                HttpGet request = new HttpGet(
-                        "http://10.1.16.44:8080/RESTful_Jersey_Hello_World/rest/hello");
 
-                //request.addHeader("Accept", "text/html");
-                //	request.addHeader("Accept", "text/xml");
-                request.addHeader("Accept", "text/plain");
-                HttpResponse response = httpclient.execute(request);
-                HttpEntity entity = response.getEntity();
-                Log.e("Response-=-=---=-=",response.getEntity().toString());
-                InputStream instream = entity.getContent();
-                String jaxrsmessage = read(instream);
-                jaxrs.setText(jaxrsmessage);
-            } catch (ClientProtocolException e) {
-                e.printStackTrace();
+    private class myAsyncTask extends AsyncTask<String,Void,String>{
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+        }
+
+        @Override
+        protected void onProgressUpdate(Void... values) {
+            super.onProgressUpdate(values);
+        }
+
+        @Override
+        protected String doInBackground(String... urls) {
+
+
+            // params comes from the execute() call: params[0] is the url.
+            try {
+                Log.e("URL::::::",urls[0]);
+                return downloadUrl(urls[0]);
             } catch (IOException e) {
-                e.printStackTrace();
+                return "Unable to retrieve web page. URL may be invalid.";
+            }
+
+        }
+
+        @Override
+        protected void onPostExecute(String s) {
+            super.onPostExecute(s);
+            jaxrs.setText(s);
+
+        }
+    }
+
+    private String downloadUrl(String myurl) throws IOException {
+        InputStream is = null;
+        // Only display the first 500 characters of the retrieved
+        // web page content.
+        int len = 500;
+
+        try {
+            URL url = new URL(myurl);
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setReadTimeout(10000 /* milliseconds */);
+            conn.setConnectTimeout(15000 /* milliseconds */);
+            conn.setRequestMethod("GET");
+            conn.setDoInput(true);
+            conn.setRequestProperty("Content-Type","text/plain");
+            conn.setRequestProperty("Content-Type","application/xml");
+            //conn.setRequestProperty("charset", "utf-8");
+            // Starts the query
+            conn.connect();
+            int response = conn.getResponseCode();
+            Log.d("Response", "The response is: " + response);
+            is = conn.getInputStream();
+
+            // Convert the InputStream into a string
+            String contentAsString = readIt(is, len);
+            return contentAsString;
+
+            // Makes sure that the InputStream is closed after the app is
+            // finished using it.
+        } finally {
+            if (is != null) {
+                is.close();
             }
         }
-    });
+    }
+
 
     @Override
     protected void onStart() {
         super.onStart();
 
-        thread.start();
+        //thread.start();
     }
 
 
 
-    private static String read(InputStream instream) {
+    public String readIt(InputStream stream, int len) throws IOException, UnsupportedEncodingException {
+        Reader reader = null;
+        reader = new InputStreamReader(stream, "UTF-8");
+        char[] buffer = new char[len];
+        reader.read(buffer);
+        return new String(buffer);
+    }
+
+   /* private static String read(InputStream instream) {
         StringBuilder sb = null;
         try {
             sb = new StringBuilder();
@@ -84,7 +146,7 @@ public class MainActivity extends AppCompatActivity {
         }
         return sb.toString();
 
-    }
+    }*/
 
 
     @Override
