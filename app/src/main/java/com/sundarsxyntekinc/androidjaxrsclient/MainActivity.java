@@ -62,7 +62,7 @@ public class MainActivity extends AppCompatActivity {
             // params comes from the execute() call: params[0] is the url.
             try {
                 Log.e("URL::::::",urls[0]);
-                return downloadUrl(urls[0]);
+                return sendGet(urls[0]);
             } catch (IOException e) {
                 return "Unable to retrieve web page. URL may be invalid.";
             }
@@ -77,7 +77,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private String downloadUrl(String myurl) throws IOException {
+    private String sendGet(String myurl) throws IOException {
         InputStream is = null;
         // Only display the first 500 characters of the retrieved
         // web page content.
