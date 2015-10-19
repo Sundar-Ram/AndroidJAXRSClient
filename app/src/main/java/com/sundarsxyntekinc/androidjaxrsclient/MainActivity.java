@@ -15,10 +15,13 @@ import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
+
+import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.io.Reader;
 import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
@@ -27,7 +30,7 @@ import java.net.URL;
 public class MainActivity extends AppCompatActivity {
 
     TextView jaxrs;
-     String url = "http://10.1.16.44:8080/RESTful_Jersey_Hello_World/rest/hello";
+     String url = "http://10.1.16.44:8080/RESTful_Jersey_Hello_World/rest/hello/post";
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -62,8 +65,10 @@ public class MainActivity extends AppCompatActivity {
             // params comes from the execute() call: params[0] is the url.
             try {
                 Log.e("URL::::::",urls[0]);
-                return sendGet(urls[0]);
+                //return sendGet(urls[0]);
+                return sendPost(urls[0]);
             } catch (IOException e) {
+                e.printStackTrace();
                 return "Unable to retrieve web page. URL may be invalid.";
             }
 
@@ -76,7 +81,7 @@ public class MainActivity extends AppCompatActivity {
 
         }
     }
-
+    //HTTP GET REQUEST
     private String sendGet(String myurl) throws IOException {
         InputStream is = null;
         // Only display the first 500 characters of the retrieved
@@ -110,6 +115,33 @@ public class MainActivity extends AppCompatActivity {
                 is.close();
             }
         }
+    }
+
+    //HTTP SEND REQUEST
+    private String sendPost(String myurl) throws IOException{
+
+        URL url = new URL(myurl);
+        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+        try {
+            conn.setReadTimeout(10000);
+            conn.setConnectTimeout(15000);
+            conn.setDoInput(true);
+            conn.setDoOutput(true);
+            conn.setRequestMethod("POST");
+            String body = "<?xml version=\"1.0\"?>" + "<hello> My name is Sundar" + "</hello>";
+
+            OutputStream os = new BufferedOutputStream((conn.getOutputStream()));
+            os.write(body.getBytes());
+            os.flush();
+            int responseCode = conn.getResponseCode();
+            System.out.println("\nSending 'POST' request to URL : " + myurl);
+            String result = "Response = " + responseCode;
+            return  result;
+
+        }finally{
+                conn.disconnect();
+            }
+
     }
 
 
