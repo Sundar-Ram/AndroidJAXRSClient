@@ -133,10 +133,13 @@ public class MainActivity extends AppCompatActivity {
             OutputStream os = new BufferedOutputStream((conn.getOutputStream()));
             os.write(body.getBytes());
             os.flush();
-            int responseCode = conn.getResponseCode();
+           InputStream is = conn.getInputStream();
+            int length = 1000;
+            String response = readIt(is,length);
+           // String responseCode = conn.getResponseMessage();
             System.out.println("\nSending 'POST' request to URL : " + myurl);
-            String result = "Response = " + responseCode;
-            return  result;
+            //String result = responseCode;
+            return  response;
 
         }finally{
                 conn.disconnect();
